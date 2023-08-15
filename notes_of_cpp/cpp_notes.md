@@ -57,6 +57,7 @@ double *p = static_cast<double*>(p);
 dynamic_cast<type>(expression);
 ```
 相比static_cast，dynamic_cast会在运行时检查类型转换是否合法，具有一定的安全性。由于运行时的检查，所以会额外消耗一些性能。**dynamic_cast只能在类层次结构中使用**，上行转换和其一致，下行转换会检查转换类型，相比static_cast安全。<br>
+
 dynamic_cast转换仅适用于指针或引用，在转换可能发生的前提下，dynamic_cast会尝试转换，若指针转换失败，则返回nullptr，若引用转换失败，则抛出std::bad_cast异常。
 
 dynamic_cast只能用于具有多态性的类类型上，或者基类指针/引用和派生类之间的转换。dynamic_cast是通过虚表来判断类的类型的，如果拥有继承关系的两个类没有虚表的话，是无法判断类型的，也就无法进行转换。
@@ -68,10 +69,10 @@ const_cast用于移除类型的const volatile __unaligned属性，常量指针�
 const char *pc;
 char *p = const_cast<char*>(pc);
 ```
-**reinterpret_cast**
+- **reinterpret_cast**
 格式：
 ```cpp
-- reinterpret_cast<type>(expression)
+reinterpret_cast<type>(expression)
 ```
 非常激进的指针类型转换，在编译期完成，可以转换任何类型的指针，所以极不安全。非极端情况不要使用。
 

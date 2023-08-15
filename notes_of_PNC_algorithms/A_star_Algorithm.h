@@ -14,7 +14,7 @@ struct GridLocation {
 namespace std {
 	template<> struct hash<GridLocation> {
 		std::size_t operator()(const GridLocation& id) const noexcept {
-			return std::hash<int>()(id.x ^ (id.y << 16);
+			return std::hash<int>()(id.x ^ (id.y << 16));
 		}
 	};
 }
