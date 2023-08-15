@@ -5,12 +5,12 @@
 #include<vector>
 #include<array>
 
-//¶¨ÒåGridLocation, °üÀ¨ÕûĞÎ×ø±êxy
+
 struct GridLocation {
 	int x, y;
 };
 
-//¶¨Òåhashº¯Êı´Ó¶ø¿ÉÒÔ½«GridLocation·ÅÖÃÈçunordered_setÖĞ
+
 namespace std {
 	template<> struct hash<GridLocation> {
 		std::size_t operator()(const GridLocation& id) const noexcept {
@@ -22,10 +22,10 @@ namespace std {
 struct SquareGrid {
 	SquareGrid(int width, int heighth):width_(width), heighth_(heighth){}
 
-	static std::array<GridLocation, 4> DIRS; //¿É±éÀúµÄ·½Ïò
+	static std::array<GridLocation, 4> DIRS; //ï¿½É±ï¿½ï¿½ï¿½ï¿½Ä·ï¿½ï¿½ï¿½
 	int width_, heighth_;
 	
-	std::unordered_set<GridLocation> walls; //µØÍ¼ÖĞÕÏ°­ÎïµÄÎ»ÖÃ
+	std::unordered_set<GridLocation> walls; //ï¿½ï¿½Í¼ï¿½ï¿½ï¿½Ï°ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½
 
 	bool in_bounds(GridLocation& id) const {
 		return 0 <= id.x && id.x < width_
