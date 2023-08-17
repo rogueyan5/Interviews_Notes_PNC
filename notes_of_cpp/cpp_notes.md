@@ -362,3 +362,65 @@ unique_ptr通过以下方式解决了auto_ptr的问题：
 ## 47.C语言和C++有什么区别？
 
 ## 48.什么是单例模式？
+单例模式意图是保证一个类仅有一个实例，并提供一个访问他的全局访问点，该实例被所有程序模块共享。
+
+定义一个单例类需要私有化其构造函数，以防止外界创建单例类的对象；使用类的私有静态指针变量指向类的唯一实例；使用一个公有的静态方法获取该实例。
+
+- Lazy Singleton懒汉版
+```cpp
+class Singleton{
+private:
+    static Singleton* instance;
+private:
+    Singleton() {}
+    ~Singleton() {}
+    Singleton(const Singleton&);
+    Singleton& operator=(const Singleton&);
+
+public:
+    static Singleton* getInstance() {
+        if(instance == nullptr) {
+            instance = new Singleton;
+            return instance;
+        }
+    }
+};
+
+Singleton* Singleton::instance = nullptr;
+```
+Lazy Singleton存在内存泄漏的问题，有两种解决方法：
+1. 使用智能指针
+2. 使用静态的嵌套对象
+
+对于第二种方法：
+```cpp
+class Singleton
+{
+private:
+	static Singleton* instance;
+private:
+	Singleton() { };
+	~Singleton() { };
+	Singleton(const Singleton&);
+	Singleton& operator=(const Singleton&);
+private:
+	class Deletor {
+	public:
+		~Deletor() {
+			if(Singleton::instance != NULL)
+				delete Singleton::instance;
+		}
+	};
+	static Deletor deletor;
+public:
+	static Singleton* getInstance() {
+		if(instance == NULL) {
+			instance = new Singleton();
+		}
+		return instance;
+	}
+};
+
+// init static member
+Singleton* Singleton::instance = NULL;
+```
