@@ -258,6 +258,67 @@ v.emplace(v.end(), 6);          //结尾处添加6
 7. 异常安全：C++异常处理机制也有助于内存自动化管理，异常抛出时析构函数被自动调用，确保资源的正确释放，从而避免内存泄漏的情况。
 
 ## 21.谈谈智能指针的原理
+C++目前引入的有三种智能指针：
+1. std::unique_ptr<T> ：独占资源所有权的指针
+2. std::shared_ptr<T> ：共享资源所有权的指针
+3. std::weak_ptr<T> :共享资源的观察者，需要和std::shared_ptr一起使用，不影响资源的声明周期
+
+- std::unique_ptr
+
+当独占资源的所有权的时候，可以使用std::unique_ptr对资源进行管理——离开unique_ptr对象的作用域时，会自动释放资源。
+
+1. 使用裸指针时，需要释放内存
+```cpp
+{int* p = new int(100);
+//...
+delete p; //使用结束后需要手动释放内存
+}
+
+{
+	std::unique_ptr<int> upti = std::make_unique<int>(200);
+	//离开upti作用域时智能指针会自动释放资源
+}
+```
+
+2. std::unique_ptr是move-only的
+```cpp
+{
+	std::unique_ptr<int> uptr = std::make_unique<int>(200);
+	std::unique_ptr<int> uptr1 = uptr; //编译错误，unique_ptr是move-only的
+	std::unique_ptr<int> uptr2 = std::move(uptr);
+	assert(uptr == nullptr);
+}
+```
+- std::shared_ptr
+
+std::shared_ptr是对资源作引用计数——当引用计数为0时，自动释放资源。
+```cpp
+{
+	std::shared_ptr<int> sptr = std::make_shared<int>(200);
+	assert(sptr.use_count == 1); //此时引用计数为1
+	{
+		std::shared_ptr<int> sptr1 = sptr;
+		assert(sptr.get() == sptr1.get());
+		assert(sptr.use_count() == 2); //此时sptr1 sptr共享资源，引用计数为2
+	}
+	assert(sptr.use_count() == 1); //sptr1在离开作用域后已经被释放，此时sptr引用计数为1
+}
+```
+1. shared_ptr的实现原理
+一个shared_ptr对象的内存开销要比裸指针和无定义deleter的unique_ptr对象略大
+
+shared_ptr需要维护的信息有两部分：
+1 指向共享资源的指针 2 引用计数等共享资源的控制信息——实现上是维护一个指向控制信息的指针
+
+- std::weak_ptr
+
+std::weak_ptr要与std::shared_ptr一起使用。一个std::weak_ptr对象可以看作是std::shared_ptr对象管理资源的观察者，不影响共享资源的生命周期：
+1. 如果需要使用weak_ptr正在观察的资源，可以将weak_ptr提升为shared_ptr
+2. 当shared_ptr管理的资源被释放时，weak_ptr会自动变成nullptr
+
+- 智能指针和move语义
+
+正是因为c++11的右值引用和move语义，才给了c++创造智能指针的条件。std::move实际上就是将左值转化为右值引用&&，其实就是一个static_cast<T&&>. 当用 = 等于号赋值的时候，因为右边的值是一个右值引用类型，所以左边的对象在构造时，会选择重载了 = 号的移动构造函数，而不是拷贝构造函数。
 
 ## 23.谈谈栈和堆相关知识内容，C++中还有什么其他内存区域？
 - 栈：由编译器管理分配和回收，存放局部变ᰁ和函数参数。<br>
@@ -424,3 +485,5 @@ public:
 // init static member
 Singleton* Singleton::instance = NULL;
 ```
+
+## 详细谈谈lambda表达式的相关内容
