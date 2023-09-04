@@ -522,6 +522,39 @@ Singleton* Singleton::instance = NULL;
 ```
 
 ## 详细谈谈lambda表达式的相关内容
+lambda表达式一般用于定义匿名函数，使得代码更加灵活简洁，和普通函数类似，也有参时列表、返回值类型和函数体，但其定义方式更为简洁，并且可以在函数内部定义。
+最常见的lambda表达式写法如下：
+```cpp
+auto plus = [](int num1, int num2) -> int {return num1 + num2;}
+int sum = plus(1, 2);
+
+vector<int> nums = {3, 2, 5, 1, 4, 8, 6, 7};
+std::sort(vec.begin(), vec.end(), [](const int& num1, const int& num2) {return num1 < num2;})
+```
+
+在C++官方文档中，给出了lambda表达式的四种使用方式：
+```cpp
+[capture_list]<tparms>(params)lambda-specifiers{body}	(1)
+[capture_list](param) return-type {body} 				(2)
+[capture_list](params) {body}							(3)
+[capture_list] lambda-specifiers {body}					(4)
+```
+- capture_list:捕获列表，lambda表达式可以将上下文变量以值或引用的方式捕获，在body总直接使用
+- tparams：模板参数列表，C++20中引入使得lambda可以像模板函数一样被调用
+- params：参数列表，在C++14之后允许使用auto左右参数类型
+- lambda-specifiers：lambda说明符，一些可选参数
+- trailing-return-type：返回值类型，一般可省略，由编译器来推导
+- body：函数体，函数的具体逻辑
+
+1. 捕获列表
+
+[]：什么都不捕获
+[=]：按值的方式捕获所有变量<br>
+[&]：按引用的方式捕获所有变量<br>
+[=, &a]：除了变量a之外，按值的方式捕获所有的局部变量，变量a使用引用的方式来捕获。<br>
+[&, a]:除了变量a之外，按引用的方式捕获所有局部变量<br>
+[a, &b]：值的方式捕获a，引用的方式捕获b<br>
+
 
 ## C++中noexcept关键字的作用是什么？
 首先，它可以提高程序的可靠性和稳定性。如果一个函数声明为 noexcept，并且在运行时抛出异常，则程序会立即终止，从而避免不确定的行为。其次，noexcept 还可以提高程序的性能。由于异常处理是一项昂贵的操作，因此使用 noexcept 可以减少异常处理的开销，从而加快程序的执行速度。最后，noexcept 还可以提高代码的可读性。通过明确地声明函数是否可能抛出异常，其他开发人员可以更容易地了解代码中可能发生的行为。
@@ -540,3 +573,20 @@ Singleton* Singleton::instance = NULL;
 1. 拷⻉基类的虚函数表，如果是多继承，就拷⻉每个有虚函数基类的虚函数表
 2. 当然还有⼀个基类的虚函数表和派⽣类⾃身的虚函数表共⽤了⼀个虚函数表，也称为某个基类为派⽣类的主基类
 3. 查看派⽣类中是否有重写基类中的虚函数， 如果有，就替换成已经重写的虚函数地址；查看派⽣类是否有⾃身的虚函数，如果有，就追加⾃身的虚函数到⾃身的虚函数表中。
+
+## 内联函数能否是虚函数？
+内联是在发生在编译期间，编译器会自主选择内联，而虚函数的多态性在运行期，编译器无法知道运行期调用哪个代码，因此虚函数表现为多态性时（运行期）不可以内联。 inline virtual唯一可以内联的时候是：编译器知道所调用的对象是哪个类（如 Base::who()），这只有在编译器具有实际对象而不是对象的指针或引用时才会发生。
+
+## 静态成员函数为什么不能是虚函数
+静态成员函数不属于类中的任何一个对象和实例属于类共有的一个函数，不存在this指针，而virtual函数的调用依赖于this指针。在有虚函数的类实例，this指针调用vptr指针，指向的是vtable，通过虚函数列表找到需要调用的虚函数地址。this->vptr->vtable->virtual虚函数
+
+## nullptr和NULL有什么区别？
+nullptr是C++11版本中新加入的，目的是解决NULL在表示空指针在C++中具有二义性的问题，在C语言中，NULL通常被定义为```#define NULL ((void *) 0)```，在C语言中支持隐式类型转换，可以将void指针转换为相应类型的指针，但C++是一种强类型语言，不支持隐式转换，所以在编译器的头文件作了如下处理：
+```cpp
+#ifdef __cplusplus;
+#define NULL 0;
+#else
+#define NULL ((void *)0)
+#endif
+```
+在C++中NULL实际是0，但是这仍然具有二义性，可能导致和程序员目的不一致；因此引入了nullptr，保证在任何情况下都可以表示空指针。
