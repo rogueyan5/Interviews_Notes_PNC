@@ -76,6 +76,19 @@ char *p = const_cast<char*>(pc);
 
 ## 4.什么是完美转发，std::forward()的作用是什么？
 std::forward()被称为完美转发，它的作用是保持原来的值属性不变。如果原来的值是左值，经std::forward处理后该值还是左值；如果原来的值是右值，经std::forward处理后它还是右值。
+```cpp
+...
+template<typename T>
+T&& forward(typename std::remove_reference<T>::type& param){
+	return static_cast<T&&>(param);
+}
+
+template<typename T>
+T&& forward(typename std::remove_reference<T>::type&& param) {
+	return static_cast<T&&>(param);
+}
+```
+std::forward()的底层原理是实现了两个模板函数，一个接收左值，另一个接收右值，std::forward()模板函数对传入的参数做了强制类型转换，转换的目标类型符合引用折叠规则，因此左值参数最终转换后仍为左值，右值参数最终转成右值。
 
 
 ## 5.什么是左值引用和右值引用，区别是什么？什么是万能引用？
@@ -118,7 +131,7 @@ auto&& var2 = var1; //"&&"表示左值引用
 template<typename T>
 void f(std::vector<T>&& param); //"&&"不一定表示右值引用
 
-template<typename T>
+template<typename T> 
 void f(T&& param);  //"&&"不一定表示右值引用
 ```
 当一个变量或参数被声明为T&&，其中T是被推导的类型，则这个变量或参数就是一个万能引用。
@@ -170,7 +183,7 @@ constexpr int limit = mf + 1;           //mf+1是常量表达式
 constexpr int sz = size();              //只有当size()是一个constexpr函数时才是一条常量表达式
 ```
 constexpr函数：constexpr函数指能用于常量表达式的函数。定义constexpr函数有几项约定
-- 函数的返回值类型及所有的类型都得时字面值类型
+- 函数的返回值类型及所有的类型都得是字面值类型
 - 函数中必须只有一条return语句
 
 ```cpp
